@@ -38,13 +38,5 @@ pipeline {
         }
 
         // Add more stages here as needed
-
     }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-            // Clean up steps or actions after all stages
-        }
-    }
 }
