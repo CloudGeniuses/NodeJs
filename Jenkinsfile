@@ -36,28 +36,29 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Update package list and install necessary tools
-                    sudo apt-get update
-                    sudo apt-get install -y unzip curl
-
-                    # Create directory for eksctl if it does not exist
-                    sudo mkdir -p /var/lib/jenkins/bin
+                    # Install AWS CLI if not present
+                    if ! command -v aws &> /dev/null; then
+                        echo "Installing AWS CLI..."
+                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
+                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
+                    else
+                        echo "Updating AWS CLI..."
+                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
+                    fi
 
                     # Install eksctl if not present
                     if ! command -v eksctl &> /dev/null; then
                         echo "Installing eksctl..."
                         curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
-                        if [ -f /tmp/eksctl ]; then
-                            sudo mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
-                        else
-                            echo "Failed to download eksctl."
-                            exit 1
-                        fi
+                        mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
                     else
                         echo "eksctl already installed."
                     fi
 
                     # Verify installations
+                    echo "AWS CLI version:"
+                    aws --version || true
                     echo "eksctl version:"
                     eksctl version || true
                     '''
