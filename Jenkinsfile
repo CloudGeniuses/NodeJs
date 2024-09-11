@@ -1,13 +1,37 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "cloudgenius-app"
-        DOCKER_REGISTRY = "cloudgeniuslab"
-        DOCKER_TAG = "latest"
-    }
-
     stages {
+        stage('Configure Sudoers') {
+            steps {
+                script {
+                    // Ensure we run the sudo configuration with elevated permissions
+                    sh '''
+                    # Check if script is being run as root
+                    if [ "$(id -u)" -ne "0" ]; then
+                        echo "This script must be run as root" 1>&2
+                        exit 1
+                    fi
+
+                    # Define the sudoers entry to be added
+                    SUDOERS_ENTRY="jenkins ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/curl, /bin/unzip"
+
+                    # Backup the existing sudoers file
+                    cp /etc/sudoers /etc/sudoers.bak
+
+                    # Check if the entry already exists
+                    if ! grep -q "$SUDOERS_ENTRY" /etc/sudoers; then
+                        # Append the entry to the sudoers file
+                        echo "$SUDOERS_ENTRY" >> /etc/sudoers
+                        echo "Updated /etc/sudoers with the required entry."
+                    else
+                        echo "The entry already exists in /etc/sudoers."
+                    fi
+                    '''
+                }
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
