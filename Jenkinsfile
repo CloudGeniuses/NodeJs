@@ -15,6 +15,23 @@ pipeline {
             }
         }
 
+        stage('Clean Up Old Installations') {
+            steps {
+                script {
+                    sh '''
+                    if [ -d /var/lib/jenkins/aws-cli ]; then
+                        echo "Removing old AWS CLI installation..."
+                        rm -rf /var/lib/jenkins/aws-cli
+                    fi
+                    if [ -f /var/lib/jenkins/bin/eksctl ]; then
+                        echo "Removing old eksctl installation..."
+                        rm -f /var/lib/jenkins/bin/eksctl
+                    fi
+                    '''
+                }
+            }
+        }
+
         // Add more stages as needed (e.g., Build, Test, Deploy)
     }
 }
