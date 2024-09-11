@@ -10,7 +10,7 @@ pipeline {
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
         PATH = '/var/lib/jenkins/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin'
-        SCANNER_HOME = tool name: 'sonar-scanner', type: 'SonarQubeScanner'
+       
     }
 
     stages {
