@@ -2,10 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables here (optional)
-        DOCKER_IMAGE = "cloudgenius-app" // Name of the Docker image
-        DOCKER_REGISTRY = "cloudgeniuslab" // Replace with your DockerHub username or registry
-        DOCKER_TAG = "latest" // Tag for the Docker image
+        DOCKER_IMAGE = "cloudgenius-app"
+        DOCKER_REGISTRY = "cloudgeniuslab"
+        DOCKER_TAG = "latest"
     }
 
     stages {
@@ -36,37 +35,40 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Update package list and install tools as root
-                    sudo bash -c "
-                        apt-get update
+                    # Update package list
+                    apt-get update
+
+                    # Install unzip if not present
+                    if ! command -v unzip &> /dev/null; then
+                        echo "Installing unzip..."
                         apt-get install -y unzip
-                        
-                        # Install AWS CLI if not present
-                        if ! command -v aws &> /dev/null; then
-                            echo 'Installing AWS CLI...'
-                            curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip'
-                            unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
-                            /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
-                        else
-                            echo 'Updating AWS CLI...'
-                            /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
-                        fi
+                    fi
 
-                        # Install eksctl if not present
-                        if ! command -v eksctl &> /dev/null; then
-                            echo 'Installing eksctl...'
-                            curl --silent --location 'https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz' | tar xz -C /tmp
-                            mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
-                        else
-                            echo 'eksctl already installed.'
-                        fi
+                    # Install AWS CLI if not present
+                    if ! command -v aws &> /dev/null; then
+                        echo "Installing AWS CLI..."
+                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
+                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
+                    else
+                        echo "Updating AWS CLI..."
+                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
+                    fi
 
-                        # Verify installations
-                        echo 'AWS CLI version:'
-                        aws --version || true
-                        echo 'eksctl version:'
-                        eksctl version || true
-                    "
+                    # Install eksctl if not present
+                    if ! command -v eksctl &> /dev/null; then
+                        echo "Installing eksctl..."
+                        curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+                        mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
+                    else
+                        echo "eksctl already installed."
+                    fi
+
+                    # Verify installations
+                    echo "AWS CLI version:"
+                    aws --version || true
+                    echo "eksctl version:"
+                    eksctl version || true
                     '''
                 }
             }
