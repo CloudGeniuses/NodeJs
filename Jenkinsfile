@@ -36,25 +36,9 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Update package list
+                    # Update package list and install necessary tools
                     sudo apt-get update
-
-                    # Install unzip if not present
-                    if ! command -v unzip &> /dev/null; then
-                        echo "Installing unzip..."
-                        sudo apt-get install -y unzip
-                    fi
-
-                    # Install AWS CLI if not present
-                    if ! command -v aws &> /dev/null; then
-                        echo "Installing AWS CLI..."
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
-                        sudo /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
-                    else
-                        echo "Updating AWS CLI..."
-                        sudo /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
-                    fi
+                    sudo apt-get install -y unzip curl
 
                     # Install eksctl if not present
                     if ! command -v eksctl &> /dev/null; then
@@ -66,8 +50,6 @@ pipeline {
                     fi
 
                     # Verify installations
-                    echo "AWS CLI version:"
-                    aws --version || true
                     echo "eksctl version:"
                     eksctl version || true
                     '''
