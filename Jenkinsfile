@@ -19,6 +19,14 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+
         stage('Clean Up Old Installations') {
             steps {
                 script {
@@ -71,5 +79,5 @@ pipeline {
         }
 
         // Further stages can be added as per the deployment requirements
-    }
+    }
 }
