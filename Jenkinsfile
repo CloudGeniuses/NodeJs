@@ -9,13 +9,12 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
-                // Checkout the code from the source repository (Git, etc.)
-                checkout scm
+                git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
             }
         }
 
-        // You can add more stages here (e.g., Build, Test, Deploy)
+        // Add more stages as needed (e.g., Build, Test, Deploy)
     }
 }
