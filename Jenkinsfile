@@ -1,37 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        // Define environment variables here (optional)
+        DOCKER_IMAGE = "cloudgenius-app" // Name of the Docker image
+        DOCKER_REGISTRY = "cloudgeniuslab" // Replace with your DockerHub username or registry
+        DOCKER_TAG = "latest" // Tag for the Docker image
+    }
+
     stages {
-        stage('Configure Sudoers') {
-            steps {
-                script {
-                    // Ensure we run the sudo configuration with elevated permissions
-                    sh '''
-                    # Check if script is being run as root
-                    if [ "$(id -u)" -ne "0" ]; then
-                        echo "This script must be run as root" 1>&2
-                        exit 1
-                    fi
-
-                    # Define the sudoers entry to be added
-                    SUDOERS_ENTRY="jenkins ALL=(ALL) NOPASSWD: /usr/bin/apt-get, /usr/bin/curl, /bin/unzip"
-
-                    # Backup the existing sudoers file
-                    cp /etc/sudoers /etc/sudoers.bak
-
-                    # Check if the entry already exists
-                    if ! grep -q "$SUDOERS_ENTRY" /etc/sudoers; then
-                        # Append the entry to the sudoers file
-                        echo "$SUDOERS_ENTRY" >> /etc/sudoers
-                        echo "Updated /etc/sudoers with the required entry."
-                    else
-                        echo "The entry already exists in /etc/sudoers."
-                    fi
-                    '''
-                }
-            }
-        }
-
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
@@ -44,11 +21,11 @@ pipeline {
                     sh '''
                     if [ -d /var/lib/jenkins/aws-cli ]; then
                         echo "Removing old AWS CLI installation..."
-                        sudo rm -rf /var/lib/jenkins/aws-cli
+                        rm -rf /var/lib/jenkins/aws-cli
                     fi
                     if [ -f /var/lib/jenkins/bin/eksctl ]; then
                         echo "Removing old eksctl installation..."
-                        sudo rm -f /var/lib/jenkins/bin/eksctl
+                        rm -f /var/lib/jenkins/bin/eksctl
                     fi
                     '''
                 }
