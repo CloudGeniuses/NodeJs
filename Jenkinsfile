@@ -71,5 +71,5 @@ pipeline {
         }
 
         // Further stages can be added as per the deployment requirements
-    }
+    }
 }
