@@ -40,11 +40,19 @@ pipeline {
                     sudo apt-get update
                     sudo apt-get install -y unzip curl
 
+                    # Create directory for eksctl if it does not exist
+                    sudo mkdir -p /var/lib/jenkins/bin
+
                     # Install eksctl if not present
                     if ! command -v eksctl &> /dev/null; then
                         echo "Installing eksctl..."
                         curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
-                        sudo mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
+                        if [ -f /tmp/eksctl ]; then
+                            sudo mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
+                        else
+                            echo "Failed to download eksctl."
+                            exit 1
+                        fi
                     else
                         echo "eksctl already installed."
                     fi
