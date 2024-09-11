@@ -19,10 +19,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    if [ -d /var/lib/jenkins/aws-cli ]; then
-                        echo "Removing old AWS CLI installation..."
-                        rm -rf /var/lib/jenkins/aws-cli
-                    fi
+                    # Remove old eksctl installation if it exists
                     if [ -f /var/lib/jenkins/bin/eksctl ]; then
                         echo "Removing old eksctl installation..."
                         rm -f /var/lib/jenkins/bin/eksctl
@@ -36,12 +33,18 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    # Install unzip if not present
+                    if ! command -v unzip &> /dev/null; then
+                        echo "Installing unzip..."
+                        sudo apt-get install -y unzip
+                    fi
+
                     # Install AWS CLI if not present
                     if ! command -v aws &> /dev/null; then
                         echo "Installing AWS CLI..."
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
-                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
+                        curl "https://d1uj6qtbmh3dt5.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        unzip awscliv2.zip
+                        sudo ./aws/install
                     else
                         echo "Updating AWS CLI..."
                         /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
