@@ -20,11 +20,11 @@ pipeline {
                     sh '''
                     if [ -d /var/lib/jenkins/aws-cli ]; then
                         echo "Removing old AWS CLI installation..."
-                        rm -rf /var/lib/jenkins/aws-cli
+                        sudo rm -rf /var/lib/jenkins/aws-cli
                     fi
                     if [ -f /var/lib/jenkins/bin/eksctl ]; then
                         echo "Removing old eksctl installation..."
-                        rm -f /var/lib/jenkins/bin/eksctl
+                        sudo rm -f /var/lib/jenkins/bin/eksctl
                     fi
                     '''
                 }
@@ -36,12 +36,12 @@ pipeline {
                 script {
                     sh '''
                     # Update package list
-                    apt-get update
+                    sudo apt-get update
 
                     # Install unzip if not present
                     if ! command -v unzip &> /dev/null; then
                         echo "Installing unzip..."
-                        apt-get install -y unzip
+                        sudo apt-get install -y unzip
                     fi
 
                     # Install AWS CLI if not present
@@ -49,17 +49,17 @@ pipeline {
                         echo "Installing AWS CLI..."
                         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                         unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
-                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
+                        sudo /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
                     else
                         echo "Updating AWS CLI..."
-                        /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
+                        sudo /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
                     fi
 
                     # Install eksctl if not present
                     if ! command -v eksctl &> /dev/null; then
                         echo "Installing eksctl..."
                         curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
-                        mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
+                        sudo mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
                     else
                         echo "eksctl already installed."
                     fi
