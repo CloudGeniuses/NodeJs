@@ -37,12 +37,12 @@ pipeline {
                 script {
                     sh '''
                     # Update package list
-                    sudo apt-get update
+                    apt-get update
 
                     # Install unzip if not present
                     if ! command -v unzip &> /dev/null; then
                         echo "Installing unzip..."
-                        sudo apt-get install -y unzip
+                        apt-get install -y unzip
                     fi
 
                     # Install AWS CLI if not present
