@@ -7,6 +7,9 @@ pipeline {
         DOCKER_REGISTRY = "cloudgeniuslab" // Replace with your DockerHub username or registry
         DOCKER_TAG = "latest" // Tag for the Docker image
         DOCKER_CREDENTIALS = "docker-credentials-id" // Jenkins credentials ID for DockerHub
+        AWS_CREDENTIALS = "aws-credentials-id" // Jenkins credentials ID for AWS
+        EKS_CLUSTER_NAME = "my-eks-cluster" // Name of the EKS cluster
+        AWS_REGION = "us-east-1" // AWS region
     }
 
     stages {
@@ -55,9 +58,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    # Create a bin directory under the Jenkins home if it doesn't exist
-                    mkdir -p /var/lib/jenkins/bin
-                    
                     # Install AWS CLI if not present
                     if ! command -v /var/lib/jenkins/bin/aws &> /dev/null; then
                         echo "Installing AWS CLI..."
@@ -84,6 +84,24 @@ pipeline {
                     echo "eksctl version:"
                     /var/lib/jenkins/bin/eksctl version || true
                     '''
+                }
+            }
+        }
+
+        stage('Create EKS Cluster') {
+            steps {
+                script {
+                    withCredentials([aws(credentialsId: AWS_CREDENTIALS)]) {
+                        sh '''
+                        echo "Checking if EKS cluster already exists..."
+                        if eksctl get cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION; then
+                            echo "EKS cluster already exists."
+                        else
+                            echo "Creating EKS cluster..."
+                            eksctl create cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION --nodegroup-name standard-workers --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3 --managed
+                        fi
+                        '''
+                    }
                 }
             }
         }
