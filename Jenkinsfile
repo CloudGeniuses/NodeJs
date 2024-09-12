@@ -106,5 +106,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    sh '''
+                    # Ensure PATH is set for kubectl
+                    export PATH=/var/lib/jenkins/bin:$PATH
+                    echo "Running kubectl version:"
+                    kubectl version --client
+                    echo "Applying Kubernetes manifests..."
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    '''
+                }
+            }
+        }
     }
 }
