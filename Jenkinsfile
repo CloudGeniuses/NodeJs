@@ -80,4 +80,11 @@ pipeline {
                     # Verify installations
                     echo "AWS CLI version:"
                     /var/lib/jenkins/bin/aws --version || true
-             
+                    echo "eksctl version:"
+                    /var/lib/jenkins/bin/eksctl version || true
+                    '''
+                }
+            }
+        }
+    }
+}
