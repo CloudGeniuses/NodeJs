@@ -9,7 +9,7 @@ pipeline {
         DOCKER_CREDENTIALS = "docker-credentials-id" // Jenkins credentials ID for DockerHub
         AWS_CREDENTIALS = "aws-credentials-id" // Jenkins credentials ID for AWS
         EKS_CLUSTER_NAME = "my-eks-cluster" // Name of the EKS cluster
-        AWS_REGION = "us-east-1" // AWS region
+        AWS_REGION = "us-east-2" // AWS region
         PATH = '/var/lib/jenkins/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin'
     }
 
