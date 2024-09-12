@@ -62,7 +62,8 @@ pipeline {
                     if ! command -v /var/lib/jenkins/bin/aws &> /dev/null; then
                         echo "Installing AWS CLI..."
                         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        unzip awscliv2.zip
+                        # Unzip without interactive prompts
+                        unzip -o awscliv2.zip
                         ./aws/install -i /var/lib/jenkins/aws-cli -b /var/lib/jenkins/bin
                     else
                         echo "Updating AWS CLI..."
