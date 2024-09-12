@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valley-js
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: valley-js
+  template:
+    metadata:
+      labels:
+        app: valley-js
+    spec:
+      containers:
+        - name: valley-js
+          image: cloudgeniuslab/cloudgenius-app
+          ports:
+            - containerPort: 3000
