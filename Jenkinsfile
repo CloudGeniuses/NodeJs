@@ -14,5 +14,13 @@ pipeline {
                 git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
     }
 }
