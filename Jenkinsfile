@@ -14,7 +14,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
+                git branch: 'main', url: 'https://github.com/CloudGeniuses/NodeJs.git'
             }
         }
         stage('Build Docker Image') {
