@@ -1,25 +1,22 @@
 pipeline {
-    agent any
-
-    environment {
-        // Define environment variables
-        DOCKER_IMAGE = "cloudgenius-app" // Name of the Docker image
-        DOCKER_REGISTRY = "cloudgeniuslab" // Replace with your DockerHub username or registry
-        DOCKER_TAG = "latest" // Tag for the Docker image
-        DOCKER_CREDENTIALS = "docker-credentials-id" // Jenkins credentials ID for DockerHub
-        AWS_CREDENTIALS = "aws-credentials-id" // Jenkins credentials ID for AWS
-        EKS_CLUSTER_NAME = "my-eks-cluster" // Name of the EKS cluster
-        AWS_REGION = "us-east-2" // AWS region
-        PATH = "/var/lib/jenkins/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+    agent {
+        docker { image 'docker:latest' }
     }
-
+    environment {
+        DOCKER_IMAGE = "cloudgenius-app"
+        DOCKER_REGISTRY = "cloudgeniuslab"
+        DOCKER_TAG = "latest"
+        DOCKER_CREDENTIALS = "docker-credentials-id"
+        AWS_CREDENTIALS = "aws-credentials-id"
+        EKS_CLUSTER_NAME = "my-eks-cluster"
+        AWS_REGION = "us-east-2"
+    }
     stages {
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -27,7 +24,6 @@ pipeline {
                 }
             }
         }
-
         stage('Push Docker Image') {
             steps {
                 script {
