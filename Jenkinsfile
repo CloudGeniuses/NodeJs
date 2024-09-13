@@ -1,6 +1,10 @@
 pipeline {
     agent {
-        docker { image 'docker:latest' }
+        docker {
+            image 'docker:latest'
+            label 'docker'  // Optional: specify a label if needed
+            args '-v /var/run/docker.sock:/var/run/docker.sock'  // Optional: pass arguments like volume mounts if necessary
+        }
     }
     environment {
         DOCKER_IMAGE = "cloudgenius-app"
