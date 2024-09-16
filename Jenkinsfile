@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-2'
-        EKS_CLUSTER_NAME = 'my-eks-cluster'
+        EKS_CLUSTER_NAME = 'my-eks-cloudgenius-cluster'
         DOCKER_IMAGE = 'cloudgenius-app'
         DOCKER_CREDENTIALS = 'docker-credentials-id' // Docker Hub credentials in Jenkins
         AWS_CREDENTIALS = 'aws-credentials-id'
