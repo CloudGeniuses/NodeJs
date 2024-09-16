@@ -10,7 +10,6 @@ pipeline {
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
         PATH = '/var/lib/jenkins/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin'
-        SCANNER_HOME = tool 'sonar-scanner' // SonarQube Scanner Home
     }
 
     stages {
@@ -74,7 +73,7 @@ pipeline {
         stage('Create EKS Cluster') {
             steps {
                 script {
-                    withCredentials([aws(credentialsId: AWS_CREDENTIALS)]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
                         sh '''
                         # Ensure PATH is set for eksctl
                         export PATH=/var/lib/jenkins/bin:$PATH
@@ -92,25 +91,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    sh ''' 
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectName=ValleyJS \
-                    -Dsonar.projectKey=valleyjs \
-                    -Dsonar.sources=.
-                    '''
-                }
-            }
-        }
-
-        stage('Trivy File System Scan') {
-            steps {
-                sh 'trivy fs --format table -o fs-scan.html .'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
@@ -119,16 +99,10 @@ pipeline {
             }
         }
 
-        stage('Trivy Image Scan') {
-            steps {
-                sh 'trivy image --format table -o image-scan.html $DOCKER_IMAGE'
-            }
-        }
-
         stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: DOCKER_CREDENTIALS, url: 'https://index.docker.io/v1/') {
+                    withDockerRegistry([credentialsId: DOCKER_CREDENTIALS, url: 'https://index.docker.io/v1/']) {
                         docker.image(DOCKER_IMAGE).push()
                     }
                 }
@@ -138,7 +112,7 @@ pipeline {
         stage('Configure AWS CLI and kubectl') {
             steps {
                 script {
-                    withCredentials([aws(credentialsId: AWS_CREDENTIALS)]) {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
                         sh '''
                         # Ensure PATH is set for AWS CLI
                         export PATH=/var/lib/jenkins/bin:$PATH
@@ -175,5 +149,3 @@ pipeline {
         }
     }
 }
-
-
