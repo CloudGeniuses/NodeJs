@@ -39,22 +39,24 @@ pipeline {
         stage('Install Tools') {
             steps {
                 script {
-                    bat '''
-                    if not exist "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe" (
-                        echo Installing AWS CLI...
-                        curl -o awscliv2.zip "https://awscli.amazonaws.com/AWSCLIV2.msi"
-                        msiexec.exe /i awscliv2.zip /quiet
-                    ) else (
-                        echo AWS CLI already installed.
-                    )
+                    powershell '''
+                    # Install AWS CLI if not present
+                    if (-not (Test-Path "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe")) {
+                        Write-Output "Installing AWS CLI..."
+                        Invoke-WebRequest -Uri "https://awscli.amazonaws.com/AWSCLIV2.msi" -OutFile "awscliv2.msi"
+                        Start-Process msiexec.exe -ArgumentList '/i', 'awscliv2.msi', '/quiet' -NoNewWindow -Wait
+                    } else {
+                        Write-Output "AWS CLI already installed."
+                    }
 
-                    if not exist "C:\\Program Files\\Jenkins\\bin\\eksctl.exe" (
-                        echo Installing eksctl...
-                        curl -L "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Windows_amd64.zip" -o eksctl.zip
-                        tar -xf eksctl.zip -C "C:\\Program Files\\Jenkins\\bin"
-                    ) else (
-                        echo eksctl already installed.
-                    )
+                    # Install eksctl if not present
+                    if (-not (Test-Path "C:\\Program Files\\Jenkins\\bin\\eksctl.exe")) {
+                        Write-Output "Installing eksctl..."
+                        Invoke-WebRequest -Uri "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Windows_amd64.zip" -OutFile "eksctl.zip"
+                        Expand-Archive -Path "eksctl.zip" -DestinationPath "C:\\Program Files\\Jenkins\\bin"
+                    } else {
+                        Write-Output "eksctl already installed."
+                    }
                     '''
                 }
             }
