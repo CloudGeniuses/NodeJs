@@ -9,7 +9,7 @@ pipeline {
         AWS_CREDENTIALS = 'Aws-cred' // AWS credentials
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
-        PATH = 'C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32'
+        PATH = 'C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32;C:\\Windows\\System32\\WindowsPowerShell\\v1.0'
     }
 
     stages {
@@ -39,24 +39,20 @@ pipeline {
         stage('Install Tools') {
             steps {
                 script {
-                    powershell '''
-                    # Install AWS CLI if not present
-                    if (-not (Test-Path "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe")) {
-                        Write-Output "Installing AWS CLI..."
-                        Invoke-WebRequest -Uri "https://awscli.amazonaws.com/AWSCLIV2.msi" -OutFile "awscliv2.msi"
-                        Start-Process msiexec.exe -ArgumentList '/i', 'awscliv2.msi', '/quiet' -NoNewWindow -Wait
-                    } else {
-                        Write-Output "AWS CLI already installed."
-                    }
+                    bat '''
+                    if not exist "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe" (
+                        echo Installing AWS CLI...
+                        powershell.exe -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://awscli.amazonaws.com/AWSCLIV2.msi' -OutFile 'awscliv2.msi'; Start-Process msiexec.exe -ArgumentList '/i', 'awscliv2.msi', '/quiet' -NoNewWindow -Wait"
+                    ) else (
+                        echo AWS CLI already installed.
+                    )
 
-                    # Install eksctl if not present
-                    if (-not (Test-Path "C:\\Program Files\\Jenkins\\bin\\eksctl.exe")) {
-                        Write-Output "Installing eksctl..."
-                        Invoke-WebRequest -Uri "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Windows_amd64.zip" -OutFile "eksctl.zip"
-                        Expand-Archive -Path "eksctl.zip" -DestinationPath "C:\\Program Files\\Jenkins\\bin"
-                    } else {
-                        Write-Output "eksctl already installed."
-                    }
+                    if not exist "C:\\Program Files\\Jenkins\\bin\\eksctl.exe" (
+                        echo Installing eksctl...
+                        powershell.exe -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Windows_amd64.zip' -OutFile 'eksctl.zip'; Expand-Archive -Path 'eksctl.zip' -DestinationPath 'C:\\Program Files\\Jenkins\\bin'"
+                    ) else (
+                        echo eksctl already installed.
+                    )
                     '''
                 }
             }
