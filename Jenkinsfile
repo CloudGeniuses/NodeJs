@@ -9,7 +9,8 @@ pipeline {
         AWS_CREDENTIALS = 'Aws-cred' // AWS credentials
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
-        PATH = 'C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32;C:\\Windows\\System32\\WindowsPowerShell\\v1.0'
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        PATH = "${DOCKER_PATH};C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
     }
 
     stages {
@@ -63,7 +64,7 @@ pipeline {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
                         bat '''
-                        set PATH=C:\\Program Files\\Jenkins\\bin;%PATH%
+                        set PATH=%PATH%
                         echo Checking if EKS cluster already exists...
                         eksctl get cluster --name %EKS_CLUSTER_NAME% --region %AWS_REGION%
                         if %ERRORLEVEL% neq 0 (
@@ -101,7 +102,7 @@ pipeline {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
                         bat '''
-                        set PATH=C:\\Program Files\\Amazon\\AWSCLIV2;%PATH%
+                        set PATH=%PATH%
                         echo Running AWS CLI version:
                         aws --version
                         echo Updating kubeconfig...
@@ -116,7 +117,7 @@ pipeline {
             steps {
                 script {
                     bat '''
-                    set PATH=C:\\Program Files\\Jenkins\\bin;%PATH%
+                    set PATH=%PATH%
                     echo Running kubectl version:
                     kubectl version --client
                     echo Applying Kubernetes manifests...
