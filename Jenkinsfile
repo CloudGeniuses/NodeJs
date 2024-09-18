@@ -5,8 +5,8 @@ pipeline {
         AWS_REGION = 'us-east-2'
         EKS_CLUSTER_NAME = 'my-eks-cg-cluster'
         DOCKER_IMAGE = 'cloudgeniuslab/cloudgenius-app'
-        DOCKER_CREDENTIALS = 'dockerhub-cred' // Docker Hub credentials
-        AWS_CREDENTIALS = 'Aws-cred' // AWS credentials
+        DOCKER_CREDENTIALS = 'dockerhub-cred'
+        AWS_CREDENTIALS = 'Aws-cred'
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
         DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
@@ -18,6 +18,14 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main', credentialsId: 'git-cred'
+            }
+        }
+
+        stage('List Files After Checkout') {
+            steps {
+                script {
+                    bat 'dir /s /b'
+                }
             }
         }
 
