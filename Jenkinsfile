@@ -73,6 +73,7 @@ pipeline {
                         ) else (
                             echo EKS cluster already exists.
                         )
+                        aws sts get-caller-identity
                         '''
                     }
                 }
@@ -107,6 +108,7 @@ pipeline {
                         aws --version
                         echo Updating kubeconfig...
                         aws eks update-kubeconfig --region %AWS_REGION% --name %EKS_CLUSTER_NAME%
+                        aws sts get-caller-identity
                         '''
                     }
                 }
