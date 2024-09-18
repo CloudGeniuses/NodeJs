@@ -5,88 +5,75 @@ pipeline {
         AWS_REGION = 'us-east-2'
         EKS_CLUSTER_NAME = 'my-eks-cg-cluster'
         DOCKER_IMAGE = 'cloudgeniuslab/cloudgenius-app'
-        DOCKER_CREDENTIALS = 'docker-credentials-id' // Docker Hub credentials in Jenkins
-        AWS_CREDENTIALS = 'aws-credentials-id'
+        DOCKER_CREDENTIALS = 'dockerhub-cred' // Docker Hub credentials
+        AWS_CREDENTIALS = 'Aws-cred' // AWS credentials
         AWS_CLI_VERSION = '2.17.46'
         EKSCTL_VERSION = '0.190.0'
-        PATH = '/var/lib/jenkins/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin'
+        PATH = 'C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32'
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main'
+                git url: 'https://github.com/CloudGeniuses/NodeJs.git', branch: 'main', credentialsId: 'git-cred'
             }
         }
 
         stage('Clean Up Old Installations') {
             steps {
                 script {
-                    sh '''
-                    if [ -d /var/lib/jenkins/aws-cli ]; then
-                        echo "Removing old AWS CLI installation..."
-                        rm -rf /var/lib/jenkins/aws-cli
-                    fi
-                    if [ -f /var/lib/jenkins/bin/eksctl ]; then
-                        echo "Removing old eksctl installation..."
-                        rm -f /var/lib/jenkins/bin/eksctl
-                    fi
+                    bat '''
+                    if exist "C:\\Program Files\\Jenkins\\aws-cli" (
+                        echo Removing old AWS CLI installation...
+                        rmdir /S /Q "C:\\Program Files\\Jenkins\\aws-cli"
+                    )
+                    if exist "C:\\Program Files\\Jenkins\\bin\\eksctl.exe" (
+                        echo Removing old eksctl installation...
+                        del /Q "C:\\Program Files\\Jenkins\\bin\\eksctl.exe"
+                    )
                     '''
                 }
             }
         }
 
-stage('Install Tools') {
-    steps {
-        script {
-            sh '''
-            # Install AWS CLI if not present
-            if ! command -v aws &> /dev/null; then
-                echo "Installing AWS CLI..."
-                curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                unzip awscliv2.zip -d /var/lib/jenkins/aws-cli
-                ls -l /var/lib/jenkins/aws-cli  # Check extracted files
-                /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin
-            else
-                echo "Updating AWS CLI..."
-                /var/lib/jenkins/aws-cli/aws/install --install-dir /var/lib/jenkins/aws-cli --bin-dir /var/lib/jenkins/bin --update
-            fi
+        stage('Install Tools') {
+            steps {
+                script {
+                    bat '''
+                    if not exist "C:\\Program Files\\Amazon\\AWSCLIV2\\aws.exe" (
+                        echo Installing AWS CLI...
+                        curl -o awscliv2.zip "https://awscli.amazonaws.com/AWSCLIV2.msi"
+                        msiexec.exe /i awscliv2.zip /quiet
+                    ) else (
+                        echo AWS CLI already installed.
+                    )
 
-            # Install eksctl if not present
-            if ! command -v eksctl &> /dev/null; then
-                echo "Installing eksctl..."
-                curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
-                mv /tmp/eksctl /var/lib/jenkins/bin/eksctl
-            else
-                echo "eksctl already installed."
-            fi
-
-            # Verify installations
-            echo "AWS CLI version:"
-            aws --version || true
-            echo "eksctl version:"
-            eksctl version || true
-            '''
+                    if not exist "C:\\Program Files\\Jenkins\\bin\\eksctl.exe" (
+                        echo Installing eksctl...
+                        curl -L "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Windows_amd64.zip" -o eksctl.zip
+                        tar -xf eksctl.zip -C "C:\\Program Files\\Jenkins\\bin"
+                    ) else (
+                        echo eksctl already installed.
+                    )
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Create EKS Cluster') {
             steps {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
-                        sh '''
-                        # Ensure PATH is set for eksctl
-                        export PATH=/var/lib/jenkins/bin:$PATH
-                        echo "PATH is: $PATH"
-                        echo "Checking if EKS cluster already exists..."
-                        if eksctl get cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION; then
-                            echo "EKS cluster already exists."
-                        else
-                            echo "Creating EKS cluster..."
-                            eksctl create cluster --name $EKS_CLUSTER_NAME --region $AWS_REGION --nodegroup-name standard-workers --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3 --managed
-                        fi
+                        bat '''
+                        set PATH=C:\\Program Files\\Jenkins\\bin;%PATH%
+                        echo Checking if EKS cluster already exists...
+                        eksctl get cluster --name %EKS_CLUSTER_NAME% --region %AWS_REGION%
+                        if %ERRORLEVEL% neq 0 (
+                            echo Creating EKS cluster...
+                            eksctl create cluster --name %EKS_CLUSTER_NAME% --region %AWS_REGION% --nodegroup-name standard-workers --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3 --managed
+                        ) else (
+                            echo EKS cluster already exists.
+                        )
                         '''
                     }
                 }
@@ -115,13 +102,12 @@ stage('Install Tools') {
             steps {
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
-                        sh '''
-                        # Ensure PATH is set for AWS CLI
-                        export PATH=/var/lib/jenkins/bin:$PATH
-                        echo "Running AWS CLI version:"
+                        bat '''
+                        set PATH=C:\\Program Files\\Amazon\\AWSCLIV2;%PATH%
+                        echo Running AWS CLI version:
                         aws --version
-                        echo "Updating kubeconfig..."
-                        aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME
+                        echo Updating kubeconfig...
+                        aws eks update-kubeconfig --region %AWS_REGION% --name %EKS_CLUSTER_NAME%
                         '''
                     }
                 }
@@ -131,14 +117,13 @@ stage('Install Tools') {
         stage('Deploy to EKS') {
             steps {
                 script {
-                    sh '''
-                    # Ensure PATH is set for kubectl
-                    export PATH=/var/lib/jenkins/bin:$PATH
-                    echo "Running kubectl version:"
+                    bat '''
+                    set PATH=C:\\Program Files\\Jenkins\\bin;%PATH%
+                    echo Running kubectl version:
                     kubectl version --client
-                    echo "Applying Kubernetes manifests..."
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
+                    echo Applying Kubernetes manifests...
+                    kubectl apply -f k8s\\deployment.yaml
+                    kubectl apply -f k8s\\service.yaml
                     '''
                 }
             }
