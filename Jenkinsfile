@@ -109,6 +109,12 @@ pipeline {
                         echo Updating kubeconfig...
                         aws eks update-kubeconfig --region %AWS_REGION% --name %EKS_CLUSTER_NAME%
                         aws sts get-caller-identity
+
+                        echo Checking kubeconfig...
+                        type %USERPROFILE%\\.kube\\config
+
+                        echo PATH:
+                        echo %PATH%
                         '''
                     }
                 }
