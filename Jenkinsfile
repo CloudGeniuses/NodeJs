@@ -11,6 +11,7 @@ pipeline {
         EKSCTL_VERSION = '0.190.0'
         DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
         PATH = "${DOCKER_PATH};C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        KUBECONFIG = 'C:\\Users\\Isaac\\.kube\\config'
     }
 
     stages {
@@ -108,13 +109,13 @@ pipeline {
                         aws --version
                         echo Updating kubeconfig...
                         aws eks update-kubeconfig --region %AWS_REGION% --name %EKS_CLUSTER_NAME%
+                        if %ERRORLEVEL% neq 0 (
+                            echo Failed to update kubeconfig.
+                            exit /b %ERRORLEVEL%
+                        )
                         aws sts get-caller-identity
-
                         echo Checking kubeconfig...
-                        type %USERPROFILE%\\.kube\\config
-
-                        echo PATH:
-                        echo %PATH%
+                        type %KUBECONFIG%
                         '''
                     }
                 }
@@ -128,6 +129,8 @@ pipeline {
                     set PATH=%PATH%
                     echo Running kubectl version:
                     kubectl version --client
+                    echo Checking kubeconfig:
+                    type %KUBECONFIG%
                     echo Applying Kubernetes manifests...
                     kubectl apply -f k8s\\deployment.yaml
                     kubectl apply -f k8s\\service.yaml
