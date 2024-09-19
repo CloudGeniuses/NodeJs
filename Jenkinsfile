@@ -133,19 +133,20 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 script {
-                    bat '''
-                    set PATH=%PATH%
-                    echo Running kubectl version:
-                    kubectl version --client
-                    echo Checking kubeconfig:
-                    type %KUBECONFIG%
-                    echo Applying Kubernetes manifests...
-                    kubectl apply -f k8s\\deployment.yaml
-                    kubectl apply -f k8s\\service.yaml
-                    '''
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: AWS_CREDENTIALS]]) {
+                        bat '''
+                        set PATH=%PATH%
+                        echo Running kubectl version:
+                        kubectl version --client
+                        echo Checking kubeconfig:
+                        type %KUBECONFIG%
+                        echo Applying Kubernetes manifests...
+                        kubectl apply -f k8s\\deployment.yaml
+                        kubectl apply -f k8s\\service.yaml
+                        '''
+                    }
                 }
             }
         }
     }
-
 }
