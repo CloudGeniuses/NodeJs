@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: valley-js-service
 spec:
-  type: LoadBalancer
+  type: LoadBalancer # Ensures that a cloud provider's load balancer is provisioned for the service
   selector:
-    app: valley-js
+    app: valley-js # Selects pods with the label app=valley-js
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 3000
+      port: 80          # Port that the service will expose externally
+      targetPort: 3000  # Port on the pod that the service will forward traffic to
