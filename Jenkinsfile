@@ -30,18 +30,19 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    bat '''
-                    "%SCANNER_HOME%\\bin\\sonar-scanner" ^
-                    -Dsonar.projectName=NODEJS-APP ^
-                    -Dsonar.projectKey=NODEJS-APP ^
-                    -Dsonar.sources=.
-                    '''
-                }
-            }
+stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonar-server') {
+            bat '''
+            "%SCANNER_HOME%\\bin\\sonar-scanner" ^
+            -Dsonar.projectName=NODEJS-APP ^
+            -Dsonar.projectKey=unique-nodejs-app ^
+            -Dsonar.sources=.
+            '''
         }
+    }
+}
+
 
         stage('Clean Up Old Installations') {
             steps {
