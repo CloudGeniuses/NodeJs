@@ -16,4 +16,4 @@ spec:
         - name: valley-js
           image: cloudgeniuslab/cloudgenius-app
           ports:
-            - containerPort: 3000
+            - containerPort: 3000
