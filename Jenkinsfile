@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-2'
-        EKS_CLUSTER_NAME = 'my-eks-cg-cluster'
+        EKS_CLUSTER_NAME = 'my-eks-genius'
         DOCKER_IMAGE = 'cloudgeniuslab/cloudgenius-app'
         DOCKER_CREDENTIALS = 'dockerhub-cred'
         AWS_CREDENTIALS = 'Aws-cred'
