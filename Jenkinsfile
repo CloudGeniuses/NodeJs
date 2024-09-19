@@ -2,16 +2,17 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'us-east-2'
-        EKS_CLUSTER_NAME = 'my-eks-genius'
-        DOCKER_IMAGE = 'cloudgeniuslab/cloudgenius-app'
-        DOCKER_CREDENTIALS = 'dockerhub-cred'
-        AWS_CREDENTIALS = 'Aws-cred'
-        AWS_CLI_VERSION = '2.17.46'
-        EKSCTL_VERSION = '0.190.0'
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        AWS_REGION = "us-east-2"
+        EKS_CLUSTER_NAME = "my-eks-genius"
+        DOCKER_IMAGE = "cloudgeniuslab/cloudgenius-app"
+        DOCKER_CREDENTIALS = "dockerhub-cred"
+        AWS_CREDENTIALS = "Aws-cred"
+        AWS_CLI_VERSION = "2.17.46"
+        EKSCTL_VERSION = "0.190.0"
+        DOCKER_PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin"
         PATH = "${DOCKER_PATH};C:\\Program Files\\Amazon\\AWSCLIV2;C:\\Program Files\\Jenkins\\bin;C:\\Windows\\System32;C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
-        KUBECONFIG = 'C:\\Users\\Isaac\\.kube\\config'
+        KUBECONFIG = "C:\\Users\\Isaac\\.kube\\config"
+        SCANNER_HOME = tool "sonar-scanner" // SonarQube Scanner Home
     }
 
     stages {
@@ -25,6 +26,19 @@ pipeline {
             steps {
                 script {
                     bat 'dir /s /b'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar-server') {
+                    bat '''
+                    "%SCANNER_HOME%\\bin\\sonar-scanner" ^
+                    -Dsonar.projectName=NODEJS-APP ^
+                    -Dsonar.projectKey=NODEJS-APP ^
+                    -Dsonar.sources=.
+                    '''
                 }
             }
         }
